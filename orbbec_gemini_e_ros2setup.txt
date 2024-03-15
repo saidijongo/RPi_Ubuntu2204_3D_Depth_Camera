@@ -1,0 +1,40 @@
+#ORBBEC D Depth Camera: Gemini E ros2
+
+eval "$(register-python-argcomplete3 ros2)"
+eval "$(register-python-argcomplete3 colcon)"
+
+mkdir -p ~/ros2_ws/src
+
+cd ~/ros2_ws/src
+git clone https://github.com/orbbec/OrbbecSDK_ROS2.git
+
+sudo apt install libgflags-dev nlohmann-json3-dev libgoogle-glog-dev \
+ros-$ROS_DISTRO-image-transport ros-$ROS_DISTRO-image-publisher ros-$ROS_DISTRO-camera-info-manager
+
+cd  ~/ros2_ws/src/OrbbecSDK_ROS2/orbbec_camera/scripts
+sudo bash install_udev_rules.sh
+sudo udevadm control --reload-rules && sudo udevadm trigger
+
+cd ~/ros2_ws/
+# build release, Default is Debug
+colcon build --event-handlers  console_direct+  --cmake-args  -DCMAKE_BUILD_TYPE=Release
+
+. ./install/setup.bash 
+ros2 launch orbbec_camera astra.launch.py # or other launch file, see below table
+
+. ./install/setup.bash 
+rviz2
+
+ros2 topic list
+ros2 service list
+ros2 param list
+
+ros2 service call /camera/get_device_info orbbec_camera_msgs/srv/GetDeviceInfo '{}'
+
+ros2 service call /camera/get_sdk_version orbbec_camera_msgs/srv/GetString '{}'
+
+ros2 service call /camera/get_color_exposure orbbec_camera_msgs/srv/GetInt32 '{}'
+
+ros2 service call /camera/get_color_gain orbbec_camera_msgs/srv/GetInt32 '{}'
+
+#https://github.com/orbbec/OrbbecSDK_ROS2
